@@ -1,4 +1,5 @@
 from tabulate import tabulate
+import random
 
 
 class MemoryBlock:
@@ -34,15 +35,16 @@ class MemoryManager:
             else:
                 current = current.next
 
-    def allocate(self, size, strategy):
-        """Escolhe o algoritmo de alocação."""
-        if strategy == 'first_fit':
-            return self.first_fit(size)
-        elif strategy == 'next_fit':
-            return self.next_fit(size)
-        elif strategy == 'best_fit':
-            return self.best_fit(size)
-        return "Erro: Estratégia inválida"
+    def allocate(self, size):
+        """Decide automaticamente o melhor algoritmo para alocação."""
+        strategies = [self.first_fit, self.next_fit, self.best_fit]
+        random.shuffle(strategies)  # Simula um comportamento de decisão dinâmica
+
+        for strategy in strategies:
+            result = strategy(size)
+            if "Alocado" in result:
+                return result
+        return "Erro: Memória insuficiente"
 
     def first_fit(self, size):
         """Aloca no primeiro bloco disponível."""
@@ -56,7 +58,7 @@ class MemoryManager:
         return "Erro: Memória insuficiente"
 
     def next_fit(self, size):
-        """Continua a busca de onde parou, a ultima alocação."""
+        """Continua a busca de onde parou, a última alocação."""
         current = self.last_alloc
         while current:
             if current.free and current.size >= size:
@@ -68,7 +70,7 @@ class MemoryManager:
         return "Erro: Memória insuficiente"
 
     def best_fit(self, size):
-        """Aloca no menor bloco que sirva, vai somando até achar o tamanho certo."""
+        """Aloca no menor bloco que sirva."""
         best = None
         current = self.head
         while current:
@@ -84,15 +86,14 @@ class MemoryManager:
     def free_memory(self, size):
         """Libera todos os blocos ocupados do tamanho especificado."""
         current = self.head
-        freed = 0  # Contador de blocos livres, inicia em 0
+        freed = 0  # Contador de blocos livres
         while current:
             if not current.free and current.size == size:
                 current.free = True  # Marca o bloco como livre
                 freed += 1  # Incrementa o contador
             current = current.next
         self._merge()  # Junta blocos livres adjacentes
-        return f"Liberados {freed} bloco(s) de {size} KB" if freed > 0 else \
-            "Erro: Nenhum bloco desse tamanho encontrado"
+        return f"Liberados {freed} bloco(s) de {size} KB" if freed > 0 else "Erro: Nenhum bloco desse tamanho encontrado"
 
     def display_memory(self):
         """Exibe o estado da memória em formato de tabela."""
@@ -103,18 +104,19 @@ class MemoryManager:
             current = current.next
         return tabulate(table, headers=["Estado", "Tamanho"], tablefmt="grid")
 
+
 # Exemplo de uso
-# O merge só une blocos livres se estiverem juntos, se tiver ex: 20-10-20-10-10, e pedir para liberar 10KB,
-# ele so libera os ultimos 10KB
-
-
 memory = MemoryManager()
-print(memory.allocate(20, 'first_fit'))
-print(memory.allocate(10, 'first_fit'))
-print(memory.allocate(20, 'next_fit'))
-print(memory.allocate(10, 'next_fit'))
-print(memory.allocate(10, 'best_fit'))
-print(memory.allocate(10, 'best_fit'))
+print(memory.allocate(1))
+print(memory.allocate(1))
+print(memory.allocate(1))
+print(memory.allocate(1))
+print(memory.allocate(1))
+print(memory.allocate(1))
+print(memory.allocate(1))
+print(memory.allocate(1))
+print(memory.allocate(1))
+print(memory.allocate(1))
 print(memory.display_memory())
-print(memory.free_memory(10))
+print(memory.free_memory(1))
 print(memory.display_memory())
